@@ -2,6 +2,7 @@ import {  Box, Container, Button, FormControl, FormErrorMessage, FormLabel, Inpu
 import { Field, Form, Formik } from 'formik';
 import { useState } from 'react';
 import React from 'react';
+import Share from '../Components/Share';
 
 function Game() {
 
@@ -219,8 +220,9 @@ function Game() {
             </Box>
           </Container>
           {!!markedButton ? <Alert />
-            :           <Button onClick={() => handleGenerate()} colorScheme='blue'>Generate</Button>
+            : <Button onClick={() => handleGenerate()} colorScheme='blue'>Generate</Button>
           }
+          <Share />
         </VStack>
       }
     </VStack>
