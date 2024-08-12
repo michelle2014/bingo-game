@@ -6,41 +6,42 @@ import Share from '../Components/Share';
 import { Inertia } from '@inertiajs/inertia';
 
 function Game() {
-  // const [isSubmitted, setIsSubmitted] = useState();
+
   const [isSubmitted, setIsSubmitted] = useState(() => {
-    return JSON.parse(localStorage.getItem('isSubmitted') || 'false');
+    const saved = localStorage.getItem('isSubmitted');
+    return saved !== null ? JSON.parse(saved) : false; // Default to false if null
+  });
+
+  const [isGenerated, setIsGenerated] = useState(() => {
+    const saved = localStorage.getItem('isGenerated');
+    return saved !== null ? JSON.parse(saved) : false; // Default to false if null
+  });
+
+  const [markedCards, setMarkedCards] = useState(() => {
+    const saved = localStorage.getItem('markedCards');
+    return saved !== null ? JSON.parse(saved) : []; // Default to empty array if null
+  });
+
+  const [cards, setCards] = useState(() => {
+    const saved = localStorage.getItem('cards');
+    return saved !== null ? JSON.parse(saved) : []; // Default to empty array if null
   });
 
   useEffect(() => {
     localStorage.setItem('isSubmitted', JSON.stringify(isSubmitted));
   }, [isSubmitted]);
 
-  // const [isGenerated, setIsGenerated] = useState(false);
-  const [isGenerated, setIsGenerated] = useState(() => {
-    return JSON.parse(localStorage.getItem('isGenerated') || 'false');
-  });
-
-    useEffect(() => {
+  useEffect(() => {
     localStorage.setItem('isGenerated', JSON.stringify(isGenerated));
   }, [isGenerated]);
 
-  const [markedCards, setMarkedCards] = useState([]);
-  // const [markedCards, setMarkedCards] = useState(() => {
-  //   return JSON.parse(localStorage.getItem('markedCards') || []);
-  // });
+  useEffect(() => {
+    localStorage.setItem('markedCards', JSON.stringify(markedCards));
+  }, [markedCards]);
 
-  //   useEffect(() => {
-  //   localStorage.setItem('markedCards', JSON.stringify(markedCards));
-  // }, [markedCards]);
-
-  const [cards, setCards] = useState([]);
-  // const [cards, setCards] = useState(() => {
-  //   return JSON.parse(localStorage.getItem('cards') || [])
-  // });
-
-  // useEffect(() => {
-  //   localStorage.setItem('cards', JSON.stringify(cards));
-  // }, [cards]);
+  useEffect(() => {
+    localStorage.setItem('cards', JSON.stringify(cards));
+  }, [cards]);
 
   function validateName(value) {
     let error
