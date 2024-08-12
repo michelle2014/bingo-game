@@ -51,7 +51,7 @@ function Game() {
 
   function handleSubmit(name) {
     console.log(name);
-    fetch('/names', {
+    fetch('/game', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',

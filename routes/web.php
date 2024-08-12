@@ -33,9 +33,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::match(['get', 'post'], '/game', [GameController::class, 'index']);
-    Route::get('/game/{name}', [GameController::class, 'index'])->name('game.index');
-    Route::post('/names', [NameController::class, 'index'])->name('name.index');
+    Route::match(['get', 'post'], '/game/{name?}', [GameController::class, 'index'])->name('game.index');
     Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard.index');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
