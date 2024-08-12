@@ -35,7 +35,7 @@ class GameController extends Controller
                     ['id' => $uuid, 'button_presses' => 0, 'marked_count' => 0, 'score' => 0]
                 );
 
-                Log::info('Game created or updated with name_id: ' . $nameId, ['game' => $game]);
+                Log::info('Game created or updated with name_id: ' . $nameId, $game->button_press, ['game' => $game]);
             }
 
             // Handle POST request for random number
@@ -48,22 +48,23 @@ class GameController extends Controller
             // Store the new number
             $generatedNumbers[] = $randomNumber;
 
-            $buttonPresses = $request->input('buttonPresses', 0);
-
             // Get the count from the request
-            $markedCard = $request->input('markedCard');
+            $markedCards = $request->input('markedCards', []);
 
-            // if ($markedCard) {
-            //     $game->markedCount ++;
-            //     $game->save();
-            // }
+            if (count($markedCards) > 0) {
+                Log::info('Cards marked: ' . $markedCards);
+                $game->markedCount = count($markedCards);
+            }
 
-            // if($game->markedCount == 24) {
-            //     $score = abs(100 - $buttonPresses);
-            //     $game->buttonPresses =$buttonPresses;
-            //     $game->score = $score;
-            //     $game->save();
-            // }
+            Log::info('Cards marked: ' . $markedCards);
+
+            $buttonPresses = $request->input('buttonPresses', 0);
+            $game->buttonPresses = $buttonPresses;
+
+            if($game->markedCount == 24) {
+                $score = abs(100 - $buttonPresses);
+                $game->score = $score;
+            }
 
             return response()->json(['number' => $randomNumber]);
         }
