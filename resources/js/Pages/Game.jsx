@@ -24,14 +24,14 @@ function Game() {
     localStorage.setItem('isGenerated', JSON.stringify(isGenerated));
   }, [isGenerated]);
 
-  const [markedButtons, setMarkedButtons] = useState([]);
-  // const [markedButtons, setMarkedButtons] = useState(() => {
-  //   return JSON.parse(localStorage.getItem('markedButtons') || []);
+  const [markedCards, setMarkedCards] = useState([]);
+  // const [markedCards, setMarkedCards] = useState(() => {
+  //   return JSON.parse(localStorage.getItem('markedCards') || []);
   // });
 
   //   useEffect(() => {
-  //   localStorage.setItem('markedButtons', JSON.stringify(markedButtons));
-  // }, [markedButtons]);
+  //   localStorage.setItem('markedCards', JSON.stringify(markedCards));
+  // }, [markedCards]);
 
   const [cards, setCards] = useState([]);
   // const [cards, setCards] = useState(() => {
@@ -50,7 +50,6 @@ function Game() {
   }
 
   function handleSubmit(name) {
-    console.log(name);
     fetch('/game', {
       method: 'POST',
       headers: {
@@ -77,11 +76,21 @@ function Game() {
     }
     setCards(newCards);
     setIsGenerated(!isGenerated);
-    setMarkedButtons([]);
+    setMarkedCards([]);
   }
 
   function handleMark(index, event) {
     event.preventDefault();
+    setMarkedCards((prevMarkedCards) => {
+      // Toggle the button state
+      if (prevMarkedCards.includes(index)) {
+        return prevMarkedCards.filter((i) => i !== index);
+      } else {
+        return [...prevMarkedCards, index];
+      }
+    });
+    console.log(markedCards);
+
     fetch('/game', {
       method: 'POST',
       headers: {
@@ -89,21 +98,13 @@ function Game() {
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
-      body: JSON.stringify({ markedCard: index })
+      body: JSON.stringify({ markedCards: markedCards})
     })
       .then(response => response.json())
       .then(data => {
         document.getElementById('marked-card').innerText = 'Marked Card: ' + index;
     })
       .catch(error => console.error('Error:', error));
-    setMarkedButtons((prevMarkedButtons) => {
-      // Toggle the button state
-      if (prevMarkedButtons.includes(index)) {
-        return prevMarkedButtons.filter((i) => i !== index);
-      } else {
-        return [...prevMarkedButtons, index];
-      }
-    });
   }
 
   function Alert() {
@@ -112,7 +113,7 @@ function Game() {
 
     function handleGenerateWithMarked() {
       setIsGenerated(!isGenerated);
-      setMarkedButtons([]);
+      setMarkedCards([]);
     }
     return (
       <>
@@ -223,7 +224,7 @@ function Game() {
                     {cards.slice(0,12).map((index) =>
                       <GridItem key={index} w='100%' h='10' bg='white' >
                         <form action='' method='post'>
-                          <Button onClick={(e) => { handleMark(index, e) }} color={markedButtons.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
+                          <Button onClick={(e) => { handleMark(index, e) }} color={markedCards.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
                         </form>
                       </GridItem>
                     )}
@@ -233,7 +234,7 @@ function Game() {
                     {cards.slice(12,24).map((index) =>
                       <GridItem key={index} w='100%' h='10' bg='white' >
                         <form action='' method='post'>
-                          <Button onClick={(e) => { handleMark(index, e) }} color={markedButtons.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
+                          <Button onClick={(e) => { handleMark(index, e) }} color={markedCards.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
                         </form>
                       </GridItem>
                     )}
@@ -318,7 +319,7 @@ function Game() {
                 }
               </Box>
             </Container>
-            {markedButtons.length !== 0 ? <Alert />
+            {markedCards.length !== 0 ? <Alert />
               : <Button onClick={() => handleGenerate()} colorScheme='blue'>Generate</Button>
             }
             <Share />
