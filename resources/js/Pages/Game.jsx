@@ -34,7 +34,6 @@ function Game() {
   // }, [markedButtons]);
 
   const [cards, setCards] = useState([]);
-  console.log(cards);
   // const [cards, setCards] = useState(() => {
   //   return JSON.parse(localStorage.getItem('cards') || [])
   // });
@@ -50,29 +49,22 @@ function Game() {
     } return error
   }
 
-  async function handleSubmit(values) {
-    try {
-      const response = await fetch('/submit-name', {
-        method: 'POST',
-        headers: {
+  function handleSubmit(name) {
+    console.log(name);
+    fetch('/names', {
+      method: 'POST',
+      headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') // Ensure CSRF token is included
-        },
-        body: JSON.stringify(values)
-      });
-      // console.log(values);
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await response.json();
-      alert('Data submitted successfully: ' + JSON.stringify(data, null, 2));
-
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Failed to submit form. Please try again.');
-    }
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify(name)
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+    })
+      .catch(error => console.error('Error:', error));
     setIsSubmitted(true);
   }
 
@@ -189,7 +181,7 @@ function Game() {
       >
         <Formik
             initialValues={{ name: '' }}
-            onSubmit={() => handleSubmit()}
+            onSubmit={(name) => handleSubmit(name)}
         >
           {() => (
             <Form method='post'>
@@ -230,7 +222,7 @@ function Game() {
                   <Grid templateColumns='repeat(5, 1fr)' gap={1}>
                     {cards.slice(0,12).map((index) =>
                       <GridItem key={index} w='100%' h='10' bg='white' >
-                        <form action='mark' method='post'>
+                        <form action='' method='post'>
                           <Button onClick={(e) => { handleMark(index, e) }} color={markedButtons.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
                         </form>
                       </GridItem>
@@ -240,7 +232,7 @@ function Game() {
                     </GridItem>
                     {cards.slice(12,24).map((index) =>
                       <GridItem key={index} w='100%' h='10' bg='white' >
-                        <form action='mark' method='post'>
+                        <form action='' method='post'>
                           <Button onClick={(e) => { handleMark(index, e) }} color={markedButtons.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
                         </form>
                       </GridItem>
@@ -334,7 +326,7 @@ function Game() {
         }
       </VStack>
       <VStack paddingTop={10}>
-        <form action='call' method='post'>
+        <form action='' method='post'>
           <Button onClick={() => fetchRandomNumber()} colorScheme='yellow'>Call next number</Button>
         </form>
         <Text id='random-number'></Text>
