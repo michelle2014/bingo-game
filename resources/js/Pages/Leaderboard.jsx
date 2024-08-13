@@ -2,7 +2,8 @@ import { TableContainer, Table, TableCaption, Thead, Tbody, Tr, Th, Td, Box, Con
 import { useEffect, useState } from 'react';
 import React from 'react';
 
-function Leaderboard({ games }) {
+function Leaderboard( props ) {
+  const games = props.games;
 
   return (
     <Container maxW='md' bg='white' color='white'>
@@ -21,16 +22,16 @@ function Leaderboard({ games }) {
               </Thead>
             <Tbody>
               {games.map((game) => (
-                <Tr key={game.id}>
-                  <Td>{game.name}</Td>
+                <Tr key={game.name_id}>
+                  <Td>{game.name.name}</Td>
                   <Td isNumeric>{game.score}</Td>
                 </Tr>
               ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
-        </Box>
-      </Container>
+            </Tbody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Container>
   )
 }
 
