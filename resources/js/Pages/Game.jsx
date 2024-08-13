@@ -1,47 +1,46 @@
-import { Text, Box, Container, Button, FormControl, FormErrorMessage, FormLabel, Input, Grid, GridItem, VStack, AlertDialog, AlertDialogBody, AlertDialogCloseButton, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, useDisclosure } from '@chakra-ui/react'
+import { Link, Text, Box, Container, Button, FormControl, FormErrorMessage, FormLabel, Input, Grid, GridItem, VStack, AlertDialog, AlertDialogBody, AlertDialogCloseButton, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, useDisclosure } from '@chakra-ui/react'
 import { Field, Form, Formik } from 'formik';
 import { useEffect, useState } from 'react';
 import React from 'react';
 import Share from '../Components/Share';
-import { Inertia } from '@inertiajs/inertia';
 
 function Game() {
-  // const [isSubmitted, setIsSubmitted] = useState();
+
   const [isSubmitted, setIsSubmitted] = useState(() => {
-    return JSON.parse(localStorage.getItem('isSubmitted') || 'false');
+    const saved = localStorage.getItem('isSubmitted');
+    return saved !== null ? JSON.parse(saved) : false; // Default to false if null
+  });
+
+  const [isGenerated, setIsGenerated] = useState(() => {
+    const saved = localStorage.getItem('isGenerated');
+    return saved !== null ? JSON.parse(saved) : false; // Default to false if null
+  });
+
+  const [markedCards, setMarkedCards] = useState(() => {
+    const saved = localStorage.getItem('markedCards');
+    return saved !== null ? JSON.parse(saved) : []; // Default to empty array if null
+  });
+
+  const [cards, setCards] = useState(() => {
+    const saved = localStorage.getItem('cards');
+    return saved !== null ? JSON.parse(saved) : []; // Default to empty array if null
   });
 
   useEffect(() => {
     localStorage.setItem('isSubmitted', JSON.stringify(isSubmitted));
   }, [isSubmitted]);
 
-  // const [isGenerated, setIsGenerated] = useState(false);
-  const [isGenerated, setIsGenerated] = useState(() => {
-    return JSON.parse(localStorage.getItem('isGenerated') || 'false');
-  });
-
-    useEffect(() => {
+  useEffect(() => {
     localStorage.setItem('isGenerated', JSON.stringify(isGenerated));
   }, [isGenerated]);
 
-  const [markedButtons, setMarkedButtons] = useState([]);
-  // const [markedButtons, setMarkedButtons] = useState(() => {
-  //   return JSON.parse(localStorage.getItem('markedButtons') || []);
-  // });
+  useEffect(() => {
+    localStorage.setItem('markedCards', JSON.stringify(markedCards));
+  }, [markedCards]);
 
-  //   useEffect(() => {
-  //   localStorage.setItem('markedButtons', JSON.stringify(markedButtons));
-  // }, [markedButtons]);
-
-  const [cards, setCards] = useState([]);
-  console.log(cards);
-  // const [cards, setCards] = useState(() => {
-  //   return JSON.parse(localStorage.getItem('cards') || [])
-  // });
-
-  // useEffect(() => {
-  //   localStorage.setItem('cards', JSON.stringify(cards));
-  // }, [cards]);
+  useEffect(() => {
+    localStorage.setItem('cards', JSON.stringify(cards));
+  }, [cards]);
 
   function validateName(value) {
     let error
@@ -50,29 +49,39 @@ function Game() {
     } return error
   }
 
-  async function handleSubmit(values) {
-    try {
-      const response = await fetch('/submit-name', {
-        method: 'POST',
-        headers: {
+  function handleSubmit(values) {
+    fetch('/game', {
+      method: 'POST',
+      headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') // Ensure CSRF token is included
-        },
-        body: JSON.stringify(values)
-      });
-      // console.log(values);
-
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({ action: 'name', name: values.name })
+    })
+      .then(response => {
       if (!response.ok) {
+        // If response status is not OK, throw an error
         throw new Error('Network response was not ok');
       }
-
-      const data = await response.json();
-      alert('Data submitted successfully: ' + JSON.stringify(data, null, 2));
-
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Failed to submit form. Please try again.');
-    }
+      return response.text(); // Get the response body as text
+    })
+    .then(text => {
+      if (text) {
+        // Attempt to parse the response text as JSON
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          throw new Error('Failed to parse JSON');
+        }
+      } else {
+        // Handle empty response case
+        return {};
+      }
+    })
+    .then(data => {
+    })
+      .catch(error => console.error('Error:', error));
     setIsSubmitted(true);
   }
 
@@ -85,11 +94,20 @@ function Game() {
     }
     setCards(newCards);
     setIsGenerated(!isGenerated);
-    setMarkedButtons([]);
+    setMarkedCards([]);
   }
 
   function handleMark(index, event) {
     event.preventDefault();
+    setMarkedCards((prevMarkedCards) => {
+      // Toggle the button state
+      if (prevMarkedCards.includes(index)) {
+        return prevMarkedCards.filter((i) => i !== index);
+      } else {
+        return [...prevMarkedCards, index];
+      }
+    });
+
     fetch('/game', {
       method: 'POST',
       headers: {
@@ -97,21 +115,13 @@ function Game() {
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
-      body: JSON.stringify({ markedCard: index })
+      body: JSON.stringify({ action: 'mark', markedCards: markedCards })
     })
       .then(response => response.json())
       .then(data => {
         document.getElementById('marked-card').innerText = 'Marked Card: ' + index;
     })
       .catch(error => console.error('Error:', error));
-    setMarkedButtons((prevMarkedButtons) => {
-      // Toggle the button state
-      if (prevMarkedButtons.includes(index)) {
-        return prevMarkedButtons.filter((i) => i !== index);
-      } else {
-        return [...prevMarkedButtons, index];
-      }
-    });
   }
 
   function Alert() {
@@ -120,7 +130,7 @@ function Game() {
 
     function handleGenerateWithMarked() {
       setIsGenerated(!isGenerated);
-      setMarkedButtons([]);
+      setMarkedCards([]);
     }
     return (
       <>
@@ -154,8 +164,6 @@ function Game() {
     )
   }
 
-  let pressCount = 0;
-
   let buttonPresses = 0;
 
   function fetchRandomNumber() {
@@ -167,18 +175,14 @@ function Game() {
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
-      body: JSON.stringify({ buttonPresses: buttonPresses })
+      body: JSON.stringify({ action: 'call', buttonPresses: buttonPresses })
     })
       .then(response => response.json())
       .then(data => {
         document.getElementById('random-number').innerText = 'Random Number: ' + data.number;
-
-        // Increment and display the press count
-        pressCount++;
-        document.getElementById('press-count').innerText = `Number of call button presses: ${pressCount}`;
     })
       .catch(error => console.error('Error:', error));
-    }
+  }
 
   return (
     <>
@@ -189,7 +193,7 @@ function Game() {
       >
         <Formik
             initialValues={{ name: '' }}
-            onSubmit={() => handleSubmit()}
+            onSubmit={(name) => handleSubmit(name)}
         >
           {() => (
             <Form method='post'>
@@ -230,8 +234,8 @@ function Game() {
                   <Grid templateColumns='repeat(5, 1fr)' gap={1}>
                     {cards.slice(0,12).map((index) =>
                       <GridItem key={index} w='100%' h='10' bg='white' >
-                        <form action='mark' method='post'>
-                          <Button onClick={(e) => { handleMark(index, e) }} color={markedButtons.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
+                        <form action='' method='post'>
+                          <Button onClick={(e) => { handleMark(index, e) }} color={markedCards.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
                         </form>
                       </GridItem>
                     )}
@@ -240,8 +244,8 @@ function Game() {
                     </GridItem>
                     {cards.slice(12,24).map((index) =>
                       <GridItem key={index} w='100%' h='10' bg='white' >
-                        <form action='mark' method='post'>
-                          <Button onClick={(e) => { handleMark(index, e) }} color={markedButtons.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
+                        <form action='' method='post'>
+                          <Button onClick={(e) => { handleMark(index, e) }} color={markedCards.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
                         </form>
                       </GridItem>
                     )}
@@ -326,21 +330,28 @@ function Game() {
                 }
               </Box>
             </Container>
-            {markedButtons.length !== 0 ? <Alert />
+            {markedCards.length !== 0 ? <Alert />
               : <Button onClick={() => handleGenerate()} colorScheme='blue'>Generate</Button>
             }
             <Share />
           </VStack>
         }
       </VStack>
-      <VStack paddingTop={10}>
-        <form action='call' method='post'>
-          <Button onClick={() => fetchRandomNumber()} colorScheme='yellow'>Call next number</Button>
-        </form>
-        <Text id='random-number'></Text>
-        <Text id='press-count'></Text>
-        <Text id='marked-card'></Text>
-      </VStack>
+      {isSubmitted &&
+        <>
+        <VStack paddingTop={10}>
+          <form action='' method='post'>
+            <Button onClick={() => fetchRandomNumber()} colorScheme='yellow'>Call next number</Button>
+          </form>
+          <Text id='random-number'></Text>
+          <Text id='marked-card'></Text>
+        </VStack>
+        <VStack paddingTop={10}>
+          <Link color='teal.500' href='/leaderboard'>
+            Check the leaderboard
+          </Link>
+        </VStack></>
+      }
     </>
   )
 }
