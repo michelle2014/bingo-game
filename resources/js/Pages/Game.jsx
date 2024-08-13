@@ -1,9 +1,8 @@
-import { Text, Box, Container, Button, FormControl, FormErrorMessage, FormLabel, Input, Grid, GridItem, VStack, AlertDialog, AlertDialogBody, AlertDialogCloseButton, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, useDisclosure } from '@chakra-ui/react'
+import { Link, Text, Box, Container, Button, FormControl, FormErrorMessage, FormLabel, Input, Grid, GridItem, VStack, AlertDialog, AlertDialogBody, AlertDialogCloseButton, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, useDisclosure } from '@chakra-ui/react'
 import { Field, Form, Formik } from 'formik';
 import { useEffect, useState } from 'react';
 import React from 'react';
 import Share from '../Components/Share';
-import { Inertia } from '@inertiajs/inertia';
 
 function Game() {
 
@@ -50,7 +49,7 @@ function Game() {
     } return error
   }
 
-  function handleSubmit(name) {
+  function handleSubmit(values) {
     fetch('/game', {
       method: 'POST',
       headers: {
@@ -58,11 +57,29 @@ function Game() {
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
-      body: JSON.stringify(name)
+      body: JSON.stringify({ action: 'name', name: values.name })
     })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
+      .then(response => {
+      if (!response.ok) {
+        // If response status is not OK, throw an error
+        throw new Error('Network response was not ok');
+      }
+      return response.text(); // Get the response body as text
+    })
+    .then(text => {
+      if (text) {
+        // Attempt to parse the response text as JSON
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          throw new Error('Failed to parse JSON');
+        }
+      } else {
+        // Handle empty response case
+        return {};
+      }
+    })
+    .then(data => {
     })
       .catch(error => console.error('Error:', error));
     setIsSubmitted(true);
@@ -90,7 +107,6 @@ function Game() {
         return [...prevMarkedCards, index];
       }
     });
-    console.log(markedCards);
 
     fetch('/game', {
       method: 'POST',
@@ -99,7 +115,7 @@ function Game() {
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
-      body: JSON.stringify({ markedCards: markedCards})
+      body: JSON.stringify({ action: 'mark', markedCards: markedCards })
     })
       .then(response => response.json())
       .then(data => {
@@ -148,8 +164,6 @@ function Game() {
     )
   }
 
-  let pressCount = 0;
-
   let buttonPresses = 0;
 
   function fetchRandomNumber() {
@@ -161,18 +175,14 @@ function Game() {
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
-      body: JSON.stringify({ buttonPresses: buttonPresses })
+      body: JSON.stringify({ action: 'call', buttonPresses: buttonPresses })
     })
       .then(response => response.json())
       .then(data => {
         document.getElementById('random-number').innerText = 'Random Number: ' + data.number;
-
-        // Increment and display the press count
-        pressCount++;
-        document.getElementById('press-count').innerText = `Number of call button presses: ${pressCount}`;
     })
       .catch(error => console.error('Error:', error));
-    }
+  }
 
   return (
     <>
@@ -327,14 +337,21 @@ function Game() {
           </VStack>
         }
       </VStack>
-      <VStack paddingTop={10}>
-        <form action='' method='post'>
-          <Button onClick={() => fetchRandomNumber()} colorScheme='yellow'>Call next number</Button>
-        </form>
-        <Text id='random-number'></Text>
-        <Text id='press-count'></Text>
-        <Text id='marked-card'></Text>
-      </VStack>
+      {isSubmitted &&
+        <>
+        <VStack paddingTop={10}>
+          <form action='' method='post'>
+            <Button onClick={() => fetchRandomNumber()} colorScheme='yellow'>Call next number</Button>
+          </form>
+          <Text id='random-number'></Text>
+          <Text id='marked-card'></Text>
+        </VStack>
+        <VStack paddingTop={10}>
+          <Link color='teal.500' href='/leaderboard'>
+            Check the leaderboard
+          </Link>
+        </VStack></>
+      }
     </>
   )
 }
