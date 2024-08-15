@@ -1,8 +1,9 @@
-import { Link, Text, Box, Container, Button, FormControl, FormErrorMessage, FormLabel, Input, Grid, GridItem, VStack, AlertDialog, AlertDialogBody, AlertDialogCloseButton, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, useDisclosure } from '@chakra-ui/react'
+import { Link, Text, Box, Container, Button, FormControl, FormErrorMessage, FormLabel, Input, Grid, GridItem, VStack, useDisclosure } from '@chakra-ui/react'
 import { Field, Form, Formik } from 'formik';
 import { useEffect, useState } from 'react';
 import React from 'react';
 import Share from '../Components/Share';
+import Alert from '../Components/Alert';
 
 function Game() {
 
@@ -41,6 +42,11 @@ function Game() {
   useEffect(() => {
     localStorage.setItem('cards', JSON.stringify(cards));
   }, [cards]);
+
+  function toggleGenerated() {
+    setIsGenerated(prev => !prev);
+    setMarkedCards([]);
+  }
 
   function validateName(value) {
     let error
@@ -127,47 +133,6 @@ function Game() {
       .catch(error => console.error('Error:', error));
   }, [markedCards]);
 
-
-  function Alert() {
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    const cancelRef = React.useRef()
-
-    function handleGenerateWithMarked() {
-      setIsGenerated(!isGenerated);
-      setMarkedCards([]);
-    }
-    return (
-      <>
-        <Button onClick={onOpen} colorScheme='blue'>Generate</Button>
-        <AlertDialog
-          motionPreset='slideInBottom'
-          leastDestructiveRef={cancelRef}
-          onClose={onClose}
-          isOpen={isOpen}
-          isCentered
-        >
-          <AlertDialogOverlay />
-
-          <AlertDialogContent>
-            <AlertDialogHeader>Discard Changes?</AlertDialogHeader>
-            <AlertDialogCloseButton />
-            <AlertDialogBody>
-              Are you sure you want to regenerate cards.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                No
-              </Button>
-              <Button onClick={() => handleGenerateWithMarked()} colorScheme='red' ml={3}>
-                Yes
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </>
-    )
-  }
-
   let buttonPresses = 0;
 
   function fetchRandomNumber() {
@@ -183,7 +148,6 @@ function Game() {
     })
       .then(response => response.json())
       .then(data => {
-        console.log(data);
         document.getElementById('random-number').innerText = 'Random Number: ' + data.number;
     })
       .catch(error => console.error('Error:', error));
@@ -335,7 +299,7 @@ function Game() {
                 }
               </Box>
             </Container>
-            {markedCards.length !== 0 ? <Alert />
+            {markedCards.length !== 0 ? <Alert isGenerated={ isGenerated } markedCards={markedCards} toggleGenerated={toggleGenerated}/>
               : <Button onClick={() => handleGenerate()} colorScheme='blue'>Generate</Button>
             }
             <Share />
