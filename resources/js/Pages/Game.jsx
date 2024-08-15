@@ -8,22 +8,22 @@ function Game() {
 
   const [isSubmitted, setIsSubmitted] = useState(() => {
     const saved = localStorage.getItem('isSubmitted');
-    return saved !== null ? JSON.parse(saved) : false; // Default to false if null
+    return saved !== null ? JSON.parse(saved) : false;
   });
 
   const [isGenerated, setIsGenerated] = useState(() => {
     const saved = localStorage.getItem('isGenerated');
-    return saved !== null ? JSON.parse(saved) : false; // Default to false if null
+    return saved !== null ? JSON.parse(saved) : false;
   });
 
   const [markedCards, setMarkedCards] = useState(() => {
     const saved = localStorage.getItem('markedCards');
-    return saved !== null ? JSON.parse(saved) : []; // Default to empty array if null
+    return saved !== null ? JSON.parse(saved) : [];
   });
 
   const [cards, setCards] = useState(() => {
     const saved = localStorage.getItem('cards');
-    return saved !== null ? JSON.parse(saved) : []; // Default to empty array if null
+    return saved !== null ? JSON.parse(saved) : [];
   });
 
   useEffect(() => {
@@ -97,17 +97,20 @@ function Game() {
     setMarkedCards([]);
   }
 
-  function handleMark(index, event) {
+  function handleMark(card, event) {
     event.preventDefault();
     setMarkedCards((prevMarkedCards) => {
       // Toggle the button state
-      if (prevMarkedCards.includes(index)) {
-        return prevMarkedCards.filter((i) => i !== index);
+      if (prevMarkedCards.includes(card)) {
+        return prevMarkedCards;
       } else {
-        return [...prevMarkedCards, index];
+        return [...prevMarkedCards, card];
       }
     });
 
+  }
+
+  useEffect(() => {
     fetch('/game', {
       method: 'POST',
       headers: {
@@ -119,10 +122,11 @@ function Game() {
     })
       .then(response => response.json())
       .then(data => {
-        document.getElementById('marked-card').innerText = 'Marked Card: ' + index;
+        document.getElementById('marked-card').innerText = 'Marked Card: ' + markedCards[markedCards.length - 1];
     })
       .catch(error => console.error('Error:', error));
-  }
+  }, [markedCards]);
+
 
   function Alert() {
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -179,6 +183,7 @@ function Game() {
     })
       .then(response => response.json())
       .then(data => {
+        console.log(data);
         document.getElementById('random-number').innerText = 'Random Number: ' + data.number;
     })
       .catch(error => console.error('Error:', error));
@@ -232,20 +237,20 @@ function Game() {
                 </Grid>
                 {isGenerated && cards.length > 0 ?
                   <Grid templateColumns='repeat(5, 1fr)' gap={1}>
-                    {cards.slice(0,12).map((index) =>
-                      <GridItem key={index} w='100%' h='10' bg='white' >
+                    {cards.slice(0,12).map((card) =>
+                      <GridItem key={card} w='100%' h='10' bg='white' >
                         <form action='' method='post'>
-                          <Button onClick={(e) => { handleMark(index, e) }} color={markedCards.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
+                          <Button onClick={(e) => { handleMark(card, e) }} color={markedCards.includes(card) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{card}</Button>
                         </form>
                       </GridItem>
                     )}
                     <GridItem w='100%' h='10' bg='white' color='tomato'>
                       <Button color='tomato' border='0px' variant='ghost' fontSize='10px'>FREE</Button>
                     </GridItem>
-                    {cards.slice(12,24).map((index) =>
-                      <GridItem key={index} w='100%' h='10' bg='white' >
+                    {cards.slice(12,24).map((card) =>
+                      <GridItem key={card} w='100%' h='10' bg='white' >
                         <form action='' method='post'>
-                          <Button onClick={(e) => { handleMark(index, e) }} color={markedCards.includes(index) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{index}</Button>
+                          <Button onClick={(e) => { handleMark(card, e) }} color={markedCards.includes(card) ? 'gray' : 'tomato'} border='0px' variant='ghost' fontSize='20px'>{card}</Button>
                         </form>
                       </GridItem>
                     )}
