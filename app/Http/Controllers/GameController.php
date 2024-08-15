@@ -38,6 +38,9 @@ class GameController extends Controller
 
         // Handle POST request for random number
         $calledNumbers = $request->session()->get('calledNumbers');
+        if(!$calledNumbers) {
+            $calledNumbers = [];
+        }
 
         $randomNumber = rand(1, 100);
         if (!in_array($randomNumber, $calledNumbers)) {
@@ -73,7 +76,6 @@ class GameController extends Controller
                 // Create or update the game
                 $game = Game::updateOrCreate(
                     ['name_id' => $nameId],
-                    ['button_presses' => 0, 'marked_count' => 0, 'score' => 0]
                 );
 
                 Log::info('Game created or updated with name_id: ' . $nameId, ['game' => $game]);
@@ -90,6 +92,7 @@ class GameController extends Controller
 
         // Get the count from the request
         $markedCards = $request->input('markedCards', []);
+        Log::info('Marking a card: ' . implode(',', $markedCards));
         if (count($markedCards) > 0) {
             Log::info('Cards marked: ' . implode(',', $markedCards));
             $game->marked_count = count($markedCards);
@@ -103,6 +106,8 @@ class GameController extends Controller
         if($game->marked_count == 24) {
             $score = abs(100 - $buttonPresses);
             $game->score = $score;
+
+            $request->session()->remove('calledNumbers');
         }
 
         $game->save();
