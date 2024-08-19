@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy to Vapor
 
 on:
   push:
@@ -10,16 +10,23 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
           tools: composer:v2
           coverage: none
+
       - name: Require Vapor CLI
         run: composer global require laravel/vapor-cli
+
+      - name: Check Vapor team
+        run: php vendor/bin/vapor team:current
+
       - name: Install Project Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
       - name: Deploy Environment
         run: vapor deploy
         env:
