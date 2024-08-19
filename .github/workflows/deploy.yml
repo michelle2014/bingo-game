@@ -22,7 +22,7 @@ jobs:
         run: composer global require laravel/vapor-cli
 
       - name: Check Vapor team
-        run: php vendor/bin/vapor team:current
+        run: vapor team:current
 
       - name: Install Project Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
