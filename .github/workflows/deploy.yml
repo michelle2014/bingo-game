@@ -24,10 +24,12 @@ jobs:
       - name: Install Project Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
+      - name: Check Vapor team
+        run: vapor team:current
+        env:
+          VAPOR_API_TOKEN: ${{ secrets.VAPOR_API_TOKEN }}
+
       - name: Deploy Environment
         run: vapor deploy
         env:
           VAPOR_API_TOKEN: ${{ secrets.VAPOR_API_TOKEN }}
-
-      - name: Check Vapor team
-        run: vapor team:current
