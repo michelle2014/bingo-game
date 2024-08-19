@@ -18,3 +18,6 @@ yarn-error.log
 /.vscode
 .DS_Store
 /database.sqlite*
+/database/*.sql
+.vapor/
+.env.staging

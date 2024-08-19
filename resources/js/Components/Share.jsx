@@ -6,7 +6,7 @@ function Share() {
       <>
         <Text>
           Share with the caller {' '}
-          <Link color='teal.500' href='http://localhost:8000/game'>
+          <Link color='teal.500' href='https://p6thk64efx6t6cqhwvytio4pqm0nwgvp.lambda-url.ap-southeast-2.on.aws/game'>
             the current layout and marking
           </Link>
         </Text>
