@@ -25,7 +25,7 @@ jobs:
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Check Vapor team
-        run: vapor team:current
+        run: vapor team:switch Personal
         env:
           VAPOR_API_TOKEN: ${{ secrets.VAPOR_API_TOKEN }}
 
