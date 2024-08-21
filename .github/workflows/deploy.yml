@@ -30,6 +30,6 @@ jobs:
           VAPOR_API_TOKEN: ${{ secrets.VAPOR_API_TOKEN }}
 
       - name: Deploy Environment
-        run: vapor deploy
+        run: vapor deploy production
         env:
           VAPOR_API_TOKEN: ${{ secrets.VAPOR_API_TOKEN }}
