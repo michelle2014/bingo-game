@@ -56,14 +56,14 @@ function Game() {
   }
 
   function handleSubmit(values) {
-    fetch('/game', {
+    fetch('/name', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
-      body: JSON.stringify({ action: 'name', name: values.name })
+      body: JSON.stringify({ name: values.name })
     })
       .then(response => {
       if (!response.ok) {
@@ -124,7 +124,7 @@ function Game() {
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
-      body: JSON.stringify({ action: 'mark', markedCards: markedCards })
+      body: JSON.stringify({ markedCards: markedCards })
     })
       .then(response => response.json())
       .then(data => {
@@ -137,18 +137,19 @@ function Game() {
 
   function fetchRandomNumber() {
     buttonPresses++;
-    fetch('/game', {
+    fetch('/rand', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
-      body: JSON.stringify({ action: 'call', buttonPresses: buttonPresses })
+      body: JSON.stringify({ buttonPresses: buttonPresses })
     })
       .then(response => response.json())
       .then(data => {
         document.getElementById('random-number').innerText = 'Random Number: ' + data.number;
+        document.getElementById('button-presses').innerText = 'Button Presses: ' + data.buttonPresses;
     })
       .catch(error => console.error('Error:', error));
   }
@@ -314,6 +315,7 @@ function Game() {
           </form>
           <Text id='random-number'></Text>
           <Text id='marked-card'></Text>
+          <Text id='button-presses'></Text>
         </VStack>
         <VStack paddingTop={10}>
           <Link color='teal.500' href='/leaderboard'>

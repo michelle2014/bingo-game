@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\RandController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\NameController;
 use Illuminate\Foundation\Application;
@@ -33,7 +34,9 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::match(['get', 'post'], '/game', [GameController::class, 'index'])->name('game.index');
+    Route::match(['get', 'post'], '/game/{nameId?}', [GameController::class, 'index'])->name('game.index');
+    Route::post('/name', [NameController::class, 'index'])->name('name.index');
+    Route::post('/rand', [RandController::class, 'index'])->name('rand.index');
     Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard.index');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
